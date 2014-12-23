@@ -1,6 +1,4 @@
-#CS35L
-
-CS35L UCLA Fall 2014 Projects
+#CS35L UCLA Fall 2014
 My labs and homeworks for each week. 
 
 ###Scores
