@@ -1,0 +1,76 @@
+1. Created a file named words and sorted the contents. 
+2. used wget to scrap the website
+3. tr
+   -the first command changes the spaces with multiple new lines
+   -changes the spaces with just a single new line
+   -sorts the output 
+   -sorts the output and only prints unique values
+   -Compares the lines in the webpage to the dictionary
+     and prints the output in 3 different columns
+    the first column are the lines unique to the webpage,
+     column 2 contains words unique in the dict
+     and column three lines in both files
+   -23 supresses column 2 and 3
+
+4. For the hawaian words:
+
+
+builwords.sh
+   
+#!/bin/bash
+
+#extract only the words
+grep "<td>" |
+
+#delete html tags
+sed 's/<[^>]*>//g' |
+
+tr -s "[:blank:]" |
+
+#delete beginning spacing
+sed 's/^[:blank:]//g' |
+
+#to lower
+tr '[:upper:]' '[:lower:]' |
+
+
+#delete whats inside parenthesis
+sed 's/([^)]*)//g' |
+
+
+#treat ` as '
+sed 's/`/'"'"'/g' |
+
+
+#eliminate carriage return
+sed 's/\r/\n/g' |
+
+
+tr [:blank:] '\n' |
+
+tr , '\n' |
+
+#squeeze multiple spaces into one
+tr -s "\n"  |
+
+
+#reject words with no hawaian chars
+sed '/[^p^k^m^n^w^l^h^a^e^i^o^u^'\'']/d' |
+
+
+
+sort -u
+
+Errors:
+The shell command won't erase english words 
+that contain only hawaian letters like whale and woman.  
+
+
+
+MISPELLED:
+
+	English: 422 (e.g. 'okina, halau) 
+	Hawaian: 463 (e.g: examples, software, homework)
+
+
+

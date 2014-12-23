@@ -1,0 +1,181 @@
+LAB
+1. Copied the patch and applied it using 
+ $ patch -p1 < patch_name
+
+Configure and make
+cd into src/ and ran ./thttpd -p 12200
+
+Got the pid by 
+ $ ps -e | grep thttpd
+While doing this, I verified that no one else was using my port.
+
+2. To check that it worked on the normal case:
+ $ wget http://localhost:12200/
+which downloaded index.html
+
+3. Created a basic shell script that calls wget with localhost:12200/AA....A
+(about 7k As)
+
+4. gdb
+gdb attach pid
+
+ After crashing the server, and backtracing bt on gdb, I got the following:
+
+  #0  0x000000376f079ded in _int_malloc () from /lib64/libc.so.6
+  #1  0x000000376f07a636 in calloc () from /lib64/libc.so.6
+  #2  0x000000376f06f22d in open_memstream () from /lib64/libc.so.6
+  #3  0x000000376f0e4c7b in __vsyslog_chk () from /lib64/libc.so.6
+  #4  0x000000376f07078e in __libc_message () from /lib64/libc.so.6
+  #5  0x000000376f076166 in malloc_printerr () from /lib64/libc.so.6
+  #6  0x000000376f07bc27 in _int_realloc () from /lib64/libc.so.6
+  #7  0x000000376f07bde5 in realloc () from /lib64/libc.so.6
+  #8  0x0000000000406c9a in httpd_realloc_str (strP=strP@entry=0x1ae3b10, maxsizeP=maxsizeP@entry=0x1ae3b18,     size=<optimized out>) at libhttpd.c:715
+  #9  0x0000000000404fb2 in handle_read (tvP=0x7fff0be4e7e0, c=0x7fa239372010) at thttpd.c:1596
+  #10 main (argc=<optimized out>, argv=<optimized out>) at thttpd.c:802
+
+5. EXPLOIT
+A good exploit will place some machine code into the string passed in after
+http://localhost:12200/{malicious_string}
+that will make the return address of the function return to some arbitrary
+position that contains our code. 
+
+6. Ran the following to compile with and without the stack-protector 
+gcc -m32 -c -S -o thttpd-nostackprot.s -fno-stack-protector -I . -I ../thttpd.c
+gcc -m32 -c -S -o thttpd-stackprot.s -fstack-protector -I . -I ../ thttpd.c
+
+To check for efficiency 
+ $ diff thttpd-nostackprot.s thttpd-stackprot.s | grep call
+> 	call	__stack_chk_fail
+> 	call	__stack_chk_fail
+> 	call	__stack_chk_fail
+< 	call	syslog
+> 	call	syslog
+> 	call	__stack_chk_fail
+
+The calls to __stack_chk_fail will make the program abort in case of a stack
+overflow, but not in the heap. 
+
+Using diff -u, we can see that using -fstack-protector adds a few more calls
+to movl, jmp and of course __stack_chk_fail, which may make the program less
+efficient. 
+
+
+7. ADDRESS SANITIZER
+gdb ./tthtpd
+set auto-load safe-path /
+run -p <port> -D
+
+==23927==ERROR: AddressSanitizer: heap-buffer-overflow on address 0xf4b03a51 at pc 0x135541 bp 0xffffbfd8 sp 0xffffbfbc
+WRITE of size 2000 at 0xf4b03a51 thread T0
+    #0 0x135540 in __interceptor_read ../../../../../gcc-4.9.2/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:228
+    #1 0x80508a6 in handle_read (/w/home.03/cs/ugrad/marcelo/cs35l/a8/sthttpd-2.26.4/src/thttpd+0x80508a6)
+    #2 0x804c77c in main (/w/home.03/cs/ugrad/marcelo/cs35l/a8/sthttpd-2.26.4/src/thttpd+0x804c77c)
+    #3 0x7fdd25 in __libc_start_main (/lib/libc.so.6+0x65bd25)
+    #4 0x804a570 (/w/home.03/cs/ugrad/marcelo/cs35l/a8/sthttpd-2.26.4/src/thttpd+0x804a570)
+
+0xf4b03a51 is located 0 bytes to the right of 2001-byte region [0xf4b03280,0xf4b03a51)
+allocated by thread T0 here:
+    #0 0x1605c4 in __interceptor_realloc ../../../../../gcc-4.9.2/libsanitizer/asan/asan_malloc_linux.cc:93
+    #1 0x80584d9 in httpd_realloc_str (/w/home.03/cs/ugrad/marcelo/cs35l/a8/sthttpd-2.26.4/src/thttpd+0x80584d9)
+    #2 0x8050792 in handle_read (/w/home.03/cs/ugrad/marcelo/cs35l/a8/sthttpd-2.26.4/src/thttpd+0x8050792)
+    #3 0x804c77c in main (/w/home.03/cs/ugrad/marcelo/cs35l/a8/sthttpd-2.26.4/src/thttpd+0x804c77c)
+    #4 0x7fdd25 in __libc_start_main (/lib/libc.so.6+0x65bd25)
+    #5 0x804a570 (/w/home.03/cs/ugrad/marcelo/cs35l/a8/sthttpd-2.26.4/src/thttpd+0x804a570)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow ../../../../../gcc-4.9.2/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:228 __interceptor_read
+Shadow bytes around the buggy address:
+  0x3e9606f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x3e960700: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x3e960710: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x3e960720: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x3e960730: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x3e960740: 00 00 00 00 00 00 00 00 00 00[01]fa fa fa fa fa
+  0x3e960750: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x3e960760: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x3e960770: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x3e960780: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x3e960790: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Heap right redzone:      fb
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack partial redzone:   f4
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Contiguous container OOB:fc
+  ASan internal:           fe
+==23927==ABORTING
+
+Address sanitizing will work as it will show the error message when it crashes. 
+
+
+8. Running diff thttpd-sanitize.s thttpd-stackprot.s -u | grep call
+seems to hint that sanitize runs much more commands that stackprot (i.e, call
+__asan_report_load4)
+Also using wc to compare the file sizes, I notice that sanitize is about 10k
+lines of code bigger than the other one. 
+
+9. Valgrind:
+It will help as it will allow to check and debug for memory leaks and bugs. 
+$ valgrind --leak-check=yes ./thttpd –p 12200
+
+==26508== Memcheck, a memory error detector
+==26508== Copyright (C) 2002-2012, and GNU GPL'd, by Julian Seward et al.
+==26508== Using Valgrind-3.8.1 and LibVEX; rerun with -h for copyright info
+==26508== Command: ./thttpd –p 12200
+==26508== 
+usage:  ./thttpd [-C configfile] [-p port] [-d dir] [-r|-nor] [-dd data_dir]
+[-s|-nos] [-v|-nov] [-g|-nog] [-u user] [-c cgipat] [-t throttles] [-h host]
+[-l logfile] [-i pidfile] [-T charset] [-P P3P] [-M maxage] [-V] [-D]
+==26508== 
+==26508== HEAP SUMMARY:
+==26508==     in use at exit: 0 bytes in 0 blocks
+==26508==   total heap usage: 0 allocs, 0 frees, 0 bytes allocated
+==26508== 
+==26508== All heap blocks were freed -- no leaks are possible
+==26508== 
+==26508== For counts of detected and suppressed errors, rerun with: -v
+==26508== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 6 from 6)
+
+——
+
+==26512== Syscall param read(buf)
+points to unaddressable byte(s)
+==26512==    at 0x38716DB720: __read_nocancel (in /lib64/libc-2.12.so)
+==26512==    by 0x40562D: handle_read (thttpd.c:1601)
+==26512==    by 0x4037B9: main (thttpd.c:802)
+==26512==  Address 0x4c6ce41 is 0 bytes after a block of size 2,001 alloc'd
+==26512==    at 0x4A06BE0: realloc (vg_replace_malloc.c:662)
+==26512==    by 0x408854: httpd_realloc_str (libhttpd.c:715)
+==26512==    by 0x4055F5: handle_read (thttpd.c:1596)
+==26512==    by 0x4037B9: main (thttpd.c:802)
+==26512==
+--26512-- VALGRIND INTERNAL ERROR: Valgrind received a signal 11 (SIGSEGV) -
+exiting
+--26512-- si_code=80;  Faulting address: 0x0;  sp: 0x402f04de0
+
+valgrind: the 'impossible' happened:
+   Killed by fatal signal
+==26512==    at 0x3803EC04: vgPlain_arena_malloc (m_mallocfree.c:291)
+==26512==    by 0x3800386A: vgMemCheck_realloc (mc_malloc_wrappers.c:490)
+==26512==    by 0x3807A0AD: vgPlain_scheduler (scheduler.c:1673)
+==26512==    by 0x380A5A19: run_a_thread_NORETURN (syswrap-linux.c:103)
+
+sched status:
+  running_tid=1
+
+Thread 1: status = VgTs_Runnable
+==26512==    at 0x4A06BE0: realloc (vg_replace_malloc.c:662)
+==26512==    by 0x408854: httpd_realloc_str (libhttpd.c:715)
+==26512==    by 0x4055F5: handle_read (thttpd.c:1596)
+==26512==    by 0x4037B9: main (thttpd.c:802)
+
+

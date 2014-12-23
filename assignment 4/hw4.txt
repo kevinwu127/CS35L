@@ -1,0 +1,22 @@
+2. Switch to a new branch
+git checkout -b quote master
+git checkout v3.0
+3. Apply patch with
+patch -p1 < ../quote-3.0-patch.txt
+4/5. C-x 4-a to add the changeling
+6. Add files with changeling as commit
+git add .
+git commit -m “ChangeLog”
+7. Pipe $git format-patch -1 --stdout > formatted-patch.txt
+for just one commit from ChangeLog
+8. Apply the created patch
+git checkout -b temp master
+git checkout v3.0
+git am < ../formatted-patch.txt
+And running through build
+./bootstrap
+./configure
+make
+9. make distdir
+and inspect diffutils-3.0/ChangeLog \
+ to make sure the commit message was added

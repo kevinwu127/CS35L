@@ -1,0 +1,38 @@
+1.1
+1. C-s ASCII
+2. C-s Instructions
+3. C-s HTML
+4. C-s hunt
+5. C-e
+6. C-a
+7. M-x goto-line Enter 1
+8. C-x C-c
+1.2
+1) M-x goto-line Enter 16 C-k
+2) C-s DELETEME Enter C-a C-k
+3) C-s HTML_comment C-s HTML_comment C-a C-p C-k C-k C-k C-k C-k
+4) C-s <!-- C-b C-b C-b C-d C-d C-d C-d C-d C-d C-d
+1.3
+M-% Assignment 1 Enter Assignment 35 Enter SP SP Esc
+M-x goto-line Enter 1 Enter M-% UTF-8 Enter US-ASCII Enter SP Esc
+M-g g 1 Enter C-s <ol> Enter C-o
+1.4
+1-4)M-> C-p C-p C-p C-p C-p C-f C-k C-r should Enter C-a C-k C-y M-y
+5)M-> C-SP C-R --- Enter C-w
+6)C-g C-_
+7)<!-- M-> -->
+8)There were 6 occurences. M-x replace-string Enter <ol> Enter <Ol> Enter
+1.5
+1)M-x make-directory Enter ~/junk
+2)C-x d ~/junk Enter
+  C-x b hello.c C-x C-w
+3)M-x compile gcc hello.c -o hello Enter 
+4)M-x compile Enter ./hello Enter C-x b *compilation* C-x C-w hello-out Enter
+5)C-SP M-> C-w C-x b hw1.txt M-> C-y 
+-*- mode: compilation; default-directory: "~/junk/" -*-
+Compilation started at Wed Oct  8 22:56:15
+
+./hello
+Hello, world!
+
+Compilation finished at Wed Oct  8 22:56:15

@@ -1,0 +1,48 @@
+1. Checked that the version of sort was new enough:
+  $ sort --version
+which yielded a version from 2014. 
+
+2. Created a file with 10M random numbers
+
+  $ od -An -t f8 -N 80000000 < /dev/urandom | tr -s ' ' '\n' > random.txt
+
+where
+ -An removes the addresses given by od  
+ -t f8 indicates that we want a double precision floating point number. 
+ -N 80000000 indicates 80M bytes
+  
+ and then removed the duplicate newlines with the tr command  
+
+Measured the time it took to sort with:
+ $time -p /usr/local/cs/bin/sort -g --parallel=N random.txt > /dev/null 
+where N is the number of threads
+
+For 1 thread:
+   real 42.37
+   user 240.88
+   sys 0.63
+
+For 2 threads:
+   real 96.09
+   user 182.94
+   sys 0.25
+
+For 4 threads:
+  real 55.13
+  user 188.94
+  sys 0.30
+
+For 8 threads:
+  real 34.95
+  user 194.31
+  sys 1.47
+
+
+From the above results, we can see that there is a direct improvement with 
+an increase in the number of threads, although this improvement is not exactly
+proportional.
+Amdahl's Law explains that there is a limit as to how much a system can be
+improved, by changing only one aspect of it. 
+
+Real speed decreases. Also, more threads require more buffer. 
+

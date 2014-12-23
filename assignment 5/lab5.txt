@@ -1,0 +1,35 @@
+Downloaded and uzipped the file with tar xvf.
+Tried to build it running ./configure CFLAGS="-g -O0"
+> make  but the build failed.
+Downloaded the patch using wget and
+applied it using ' patch -p0 < coreutils.diff ', this time succeeded
+creating the executables.
+
+To recreate the bug, I touched the three files with the appropiate timestamps
+The error is that wwi-armistice shows at the top \
+when it should be at the bottom based on a chronological sorting.
+
+DEBUGGING
+Started a session in gdb. The hint was to look into the comparing \
+function of qsort. I opened ls.c in emacs and ran gdb with: 'M-x gdb' and 'gdb --anotate3 ./ls`. Set breakpoints where I deemed useful using ‘b’ (i.e. b sort_files).
+Stepping through each time using s or n.
+
+After some careful evaluation and multiple stepping through and re-runs, I ended up looking at the timespec.h file.
+Printing the values of the variables showed that wwi-armistice stored a
+negative number whereas and ‘now’ a positive value. I inspected this issue using
+gdb to look at the variables. It seemed that a substraction of a negative number
+to a positive one caused overflow.
+
+To fix this bug, I declared variables big enough to prevent this error inside
+timespec.h. A signed long long int worked in this case.
+The logic of this function will return 1,0 or -1, depending on the calculation.
+
+Recompiling coreutils with the patched file resolved the issue.
+
+ON SEAS
+
+wwi-armistice was taken as though it had been created in a future date.
+The root of the problem is that SEASnet servers use 64bit, while the files that
+I create are saved (read truncated) as 32bit. The sign of the timestamp is lost
+at this operation. Therefore, the file is assigned a positive numbered timestamp
+that corresponds to the future. 

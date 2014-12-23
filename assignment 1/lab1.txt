@@ -1,0 +1,48 @@
+1. man -k "keyword"
+2. /bin/cp /usr/bin/wc
+3. X - a portable, network-transparent window system
+   w - see who is logged in and what they are doing.
+   [ - shell related program. No man pages. 
+4. gcc.
+5. g-s does the following:
+   g - the permissions that other users in the file's group have for it 
+   s - set user or group ID on execution 
+6. find -mtime -3
+7. find / -type d -mtime -3
+8. 18
+9. stdio-lock.h
+10. The LC_* environment variables
+11. sort-columns, sort-fields, sort-lines, sort-numeric-fields, 
+sort-pages, sort-paragraphs, rmail-sort-by-author, 
+rmail-sort-by-correspondent, rmail-sort-by-date,rmail-sort-by-labels,
+ rmail-sort-by-lines, rmail-sort-by-recipient,rmail-sort-by-subject,
+12.C-a - go to the beginning of the line
+   C-b - move one char back
+   C-c - In addition to other commands, it serves to change mode
+   C-d - Deletes a char
+   C-e - move to the end of the line
+   C-f - move one char forward
+   C-g - cancels a command
+   C-h - Combined with other command, it gives info about that command.
+   C-i - Inserts a tab
+   C-k - Delete(kill) the text (or even an empty line) after the cursor
+   C-l - Moves the page around the cursor
+   C-m - Insert a new line and move to it
+   C-n - Move down one line
+   C-o - Insert a new line but keep cursot on current line
+   C-p - Move up a line
+   C-q - Insert the next command as simple text
+   C-r - Search upwards (from cursor to the top of the file)
+   C-s - Search
+   C-t - Switch this character and the character behind it
+   C-u - Print the following character multiple times (specifiable)
+   C-v - Move down a page
+   C-w - Kill the region
+   C-x - Combines with other commands to do stuff "extend"
+   C-y - Yank the last kill into the buffer
+   C-z - suspend/minimize emacs
+13. C-g cancels the command that is currently running in a relatively safe way.
+    Also, it allows you to cancel a partially typed command. 
+14. Yanking is pasting the last kill into the buffer. 
+15. Emacs dired finds a few more files than the ls -l option,
+    this is because it lists some subdirectories.

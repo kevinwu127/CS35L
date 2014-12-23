@@ -1,0 +1,36 @@
+1. Used wget {url} to grab the tar file of coreutils. 
+2. then I unzipped it using tar -xvf
+3. read the documentation (configure) to understand how the \
+general implementation of coreutils is.
+4. running   ./configure ; make  creates the makefile
+5. I use both ls and ./ls to notice the difference in the date format
+6. Read Brady's patch and made the necessary changes to the ls.c file
+7. Running make again outputs the following (excluding all \
+   the "entering/leaving directory" lines):
+make  all-recursive   =  tries to run make on all the files needed
+Making all in lib
+  GEN    configmake.h
+make  all-recursive
+  GEN    configmake.h  
+Making all in src     
+make  all-am          = all these commands are not needed
+Making all in doc
+Making all in man
+Making all in po
+Making all in tests
+Making all in gnulib-tests
+make  all-recursive
+
+
+  CC     ls.o   = detects that ls.c changed, so it creates the object file
+  CCLD   dir
+  CCLD   vdir
+  CCLD   ls
+
+
+
+  GEN    dir.1
+  GEN    vdir.1
+  GEN    ls.1
+
+

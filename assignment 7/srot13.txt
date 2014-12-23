@@ -1,0 +1,51 @@
+1. I generated a random input that contained 11M bytes with a function ("writebig")
+and this is the time it took:
+
+  srot13
+  
+  real	0m7.593s
+  user	0m3.344s
+  sys	0m1.567s
+
+  -srot13u
+
+  Number of comparisons: 141254327
+
+  real   0m23.600s
+  user   0m3.305s
+  sys    0m17.693s
+
+///////////
+  Now for the test string provided in the assigment
+time printf '\0Gur\n\0Dhvpx\n\0Oebja\n\0sbk\n\twhzcf\n\tbire\n\tgur\n\tynml\n\tqbt.' | ./srot13u | od -c
+
+real 0m0.005s
+user 0m0.004s
+sys  0m0.005s    for srot13u
+
+
+real 0m0.005s
+user 0m0.003s
+sys  0m0.005s    for srot13
+
+No real difference for small input. 
+
+////////////
+
+In general, srot13u will take longer as it needs to switch between users and read and write one char at a time. 
+Thus, the unbuffered version takes longer. 
+ 
+
+Input lines vs. Comparisons made
+
+Modifying the random file generator program to get files of different sizes got the following results:
+
+Input Lines   	     Comparisons
+10		              22
+100		            1343
+100K    	         1002933
+1M  			13466327
+10M    		       179398201
+100M  		      1223589032
+
+Which agrees with the big-oh time of qsort O(nlog(n)), as expected. 

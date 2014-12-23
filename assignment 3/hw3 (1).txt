@@ -1,0 +1,17 @@
+Q1: The "case_long_iso_time_style:" was a goto statement,\
+ which was already caught\
+ by the switch statement. It was not necessary to remove it.
+
+Q2: Countries where the English date format is not the standard will \
+have troubles interpreting the output of the date.
+Also, applications that use the numeric date format will be affected,
+since the date is now displayed differently.
+
+Q3: It throws and exception:" IndexError: list index out of range"
+
+Q4: The following error is raised:
+    File "randline.py", line 65
+      except IOError as (errno, strerror):
+                      ^ 
+    SyntaxError: invalid syntax
+    Python3 has a diffrent syntax than python2.

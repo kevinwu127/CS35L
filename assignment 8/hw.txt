@@ -1,0 +1,71 @@
+AMAZON EC2
+
+1. Created a server instance by following the instructions on the Amazon site.
+2. Generated and downloaded a key pair  
+3. chmod 400 key.pem
+4. Transfered the files to the server
+   scp -i key.pem -r sthttpd-2.26.4 ec2-user@54.68.29.152:~
+   scp -i key.pem wget.sh  ec2-user@54.68.29.152:~
+5. ssh'ed into the server
+   ssh -i key.pem ec2-user@54.68.29.152
+(All the following commands were run in the server)
+6. sudo su
+7. yum install gcc
+8. cd sthttpd-2.26.4/src
+9. Applied the patch to thttpd.c as in the lab
+10. ran configure with CFLAGS="-g"
+11. make
+12. verified that everything worked with a simple wget 
+13. Crashed the server with a long wget 
+14. Followed exactly everything listed on lab.txt.  
+
+
+
+
+VULNERABILITIES
+In order of seriousness (most urgent at the top):
+
+1. VU#213119 Microsoft Windows Kerberos Key Distribution Center (KDC) fails to properly validate Privilege Attribute Certificate (PAC) signature
+
+  Given that the user could get admin privileges, this is the worst damage that could be caused,
+ as the hacker could compromise any computer on the network. 
+  Also, an update has been released by the Microsoft Team, which makes it easy to fix. 
+
+
+2. VU#720951 OpenSSL TLS heartbeat extension read overflow discloses sensitive information
+ 
+  Heartbleed. With this vulnerability, a hacker can get access to private and
+sensitive information such as secret keys, usernames and passwords. By
+leveraging this information, an attacker may be able to decrypt, spoof, or
+perform man-in-the-middle attacks on network traffic that would otherwise be
+protected by OpenSSL. This is extremely risky as communications will become
+unprotected, and data will be compromised. 
+
+  To protect against this, we need to regenerate keys, usernames and
+passwords. Also, OpenSSL released a solution to this issue.  
+
+3. VU#505120 Microsoft Secure Channel (Schannel) vulnerable to remote code execution via
+specially crafted packets 
+
+  This vulnerability allows a hacker to execute arbitrary code remotely. This
+is really dangerous as the hacker can execute code at any point in time
+without having to wait for any sort of user interaction.
+  An update has been released to fix this issue.
+
+
+4. VU#252743 GNU Bash shell executes commands in exported functions in environment
+variables
+
+  The hacker can execute arbitrary code at the privilege level of the calling
+application.
+  No comprehensive patch has been released to fully address this bug, so this
+will take some time to fix.
+
+
+5. VU#447516 Linksys SMART WiFi firmware contains multiple vulnerabilities
+ 
+  The hacker can read and modify the router information with a simple HTTP
+request. This could allow the hacker to enter our network and steal sensitive
+information. Although this is a problem, it is not as dangerous as the issues
+listed above. 
+  Linksys has released patches for this. 

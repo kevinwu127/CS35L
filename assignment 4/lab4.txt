@@ -1,0 +1,45 @@
+Got a copy of the repo
+Dumped the log into a text file using git log
+Dumped the tags into git-tags.txt using git tag
+Created the patch wit the following
+> git format-patch -1 <hased log key> --stdout > ../quote-patch.txt
+Checked out a previously created branch
+> git checkout v3.0
+Tried to apply the patch
+> patch -p1 < ../quote-patch.txt
+Applied the patch, skipping over some files.
+Using git status, I looked at which files \
+changed after the patch was applied
+> git status
+Shows which files were modified and untracked.
+> inspected all the non .c files
+ C-x v = C-x v u to undo all the comment changes
+ Now in all the .c files
+  C-x v = to open diff buffer
+   undo all the hunks
+    manualy inspected every file in *.c.rej
+    Changed all the sections that were not previously found
+    Ran git clean -n  and git clean -f to remove untracked files
+    As instructed by the README-hacking I ran the following
+    ./bootstrap
+    ./configure
+    ./make
+
+Verifying that it does the right thing..
+cd src
+./diff . -
+ which should show errors with single quotes ''
+ ./diff --help3
+   should show help with ''
+
+Create directories for the patch
+mkdir ../diffutils-3.0-patch
+mkdir ../diffutils-3.0
+and moving src folder to
+cp * ../diffutils-3.0-patch
+Repeat above steps after checking out v3.0 and run
+diffutils-3.0-patch/diff -pru diffutils-3.0 diffutils-3.0-patch >quote-3.0-test.
+txt
+15.The files are indeed different. (200 loc)
+The difference lies in the string literals, so not innocous.
+

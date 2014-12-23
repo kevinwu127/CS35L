@@ -1,0 +1,35 @@
+1. Created catb.c
+   //get char
+   	 //if it is not the end of the file
+   	 //put char
+
+2. catu.c
+   //read char into buffer
+   //write char to buffer
+
+2.1. Created a writebigfile function to create a 5,000,000 byte .txt file.
+
+3. strace
+  I ran the following:
+  strace -o ./catb < bigfile.txt
+  
+   -catb creates a buffer that is big enough (65536 bytes) to hold more than just one char.
+    That means that the next time getchar is called, there is no need to do a system call. This also applies when writing to the buffer. 
+   -catu by comparison, creates a one-char buffer, so it needs to create 5 Million to hold the file.
+
+4. Time
+   I ran time ./catb < file
+
+   -catb
+    real	0m0.377s
+    user	0m0.198s
+    sys		0m0.034s
+
+   -catu
+   real	0m6.178s
+   user	0m0.201s
+   sys	0m5.969s
+
+   This performance follows from the logic explained in (3), catb is faster as it makes less system calls. catu is about 17 times slower. 
+
+    

@@ -1,0 +1,54 @@
+#!/bin/bash
+
+
+#Finds duplicates
+IFS=$'\n'
+dir=$1
+num=0
+
+
+function rmduplicates()
+{
+    #declares an array of strings with the filenames as elements
+    declare -a files=($(find $dir -maxdepth 1 -type f | sort))
+    count=0
+    until [ $count -eq $num ]
+    do
+	files=("${files[@]:1}")  #shift the array one up
+	count=$((count+1))
+    done
+    
+    sizeofarray=${#files[@]}
+	
+
+    #base case
+    if [ $sizeofarray -le 1 ]
+    then
+	exit 0
+    fi
+
+    count=1
+    f=${files[0]}
+    while [ $count -lt $sizeofarray ]
+    do
+	g="${files[count]}"
+	cmp -s "$f" "$g"
+	#if files are duplicates, create hard link
+	if [ $? -eq 0 ] 
+	then
+	    rm "$g"
+	    ln "$f" "$g"
+	fi
+	count=$((count+1))
+    done
+    num=$((num+1))
+
+
+}
+
+#runs the rmduplicates
+while true
+do
+    rmduplicates
+done
+

@@ -1,0 +1,46 @@
+#!/bin/bash
+
+#extract only the words
+grep "<td>" |
+
+#delete html tags
+sed 's/<[^>]*>//g' |
+
+tr -s "[:blank:]" |
+
+#delete beginning spacing
+sed 's/^[:blank:]//g' |
+
+#to lower
+tr '[:upper:]' '[:lower:]' |
+
+
+#delete whats inside parenthesis
+sed 's/([^)]*)//g' |
+
+
+#treat ` as '
+sed 's/`/'"'"'/g' |
+
+
+#eliminate carriage return
+sed 's/\r/\n/g' |
+
+
+tr [:blank:] '\n' |
+
+tr , '\n' |
+
+#squeeze multiple spaces into one
+tr -s "\n"  |
+
+
+#reject words with no hawaian chars
+sed '/[^p^k^m^n^w^l^h^a^e^i^o^u^'\'']/d' |
+
+
+
+sort -u
+
+
+
