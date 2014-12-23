@@ -1,5 +1,5 @@
 #CS35L
-=====
+
 CS35L UCLA Fall 2014 Projects
 My labs and homeworks for each week. 
 
